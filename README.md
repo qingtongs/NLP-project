@@ -43,7 +43,7 @@ Apply the evidence sufficiency gate to create the final submission artifacts:
 .\.venv\Scripts\python.exe evidence_gate.py --corpus corpus.json --questions NLP_官方评测教程/eval_tutorial/MultiHopRAG.json --raw-record run_final/execution_record.json --output-dir run_final_gated
 ```
 
-The gate checks names of publishers in the question against the corpus's `source` values. It saves the raw generator answer, missing publisher names, and final answer under `answer_postprocessing` for every question. It does not inspect reference answers or question types.
+The gate checks names of publishers in the question against the corpus's `source` values. If generation fails with an empty answer after retries, the postprocessor emits an explicit `Insufficient Information` fallback. It saves the raw generator answer, missing publisher names, fallback flag, and final answer under `answer_postprocessing` for every question. It does not inspect reference answers or question types.
 
 Validate the submission records before scoring:
 

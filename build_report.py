@@ -130,6 +130,9 @@ def main() -> None:
         if not texts:
             raise ValueError(f"Missing section: {heading}")
         set_body(slot, texts[0])
+        if heading == "Contributions":
+            target.paragraph_format.keep_with_next = True
+            slot.paragraph_format.keep_together = True
         current = slot
         for paragraph_text in texts[1:]:
             current = after(current, paragraph_text)

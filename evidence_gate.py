@@ -56,6 +56,7 @@ def main() -> None:
     if len(questions) != 2556 or len(rows) != 2556:
         raise ValueError("The complete question set and raw record are required")
     gated = 0
+    empty_fallbacks = 0
     for i, row in enumerate(rows):
         question = questions[i]["query"]
         if row["question_id"] != f"q{i:04d}" or row["question"] != question:
@@ -65,20 +66,27 @@ def main() -> None:
         if missing:
             row["model_answer"] = "Insufficient Information"
             gated += 1
+        elif not str(before).strip():
+            row["model_answer"] = "Insufficient Information"
+            empty_fallbacks += 1
         row["answer_postprocessing"] = {
-            "method": "missing named publisher abstention",
+            "method": ("missing named publisher abstention" if missing else
+                       "empty generator fallback" if not str(before).strip() else "none"),
             "missing_publishers": missing,
             "generator_answer": before,
+            "empty_generator_fallback": not str(before).strip() and not missing,
             "final_answer": row["model_answer"],
         }
     info = data["run_info"]
-    info["rag_method"] += "; post-generation missing-publisher evidence gate"
+    info["rag_method"] += "; post-generation missing-publisher evidence gate and empty-answer fallback"
     info["settings"]["evidence_gate"] = {
         "name": "missing named publisher abstention",
         "publisher_aliases": list(PUBLISHER_NAMES),
         "source_metadata_field": "source",
     }
+    info["settings"]["empty_answer_fallback"] = "Insufficient Information"
     info["resource_usage"]["evidence_gate_abstentions"] = gated
+    info["resource_usage"]["empty_generator_fallbacks"] = empty_fallbacks
     args.output_dir.mkdir(parents=True, exist_ok=True)
     (args.output_dir / "execution_record.json").write_text(
         json.dumps(data, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
@@ -86,7 +94,7 @@ def main() -> None:
         json.dumps([{"question_id": row["question_id"],
                      "model_answer": row["model_answer"]} for row in rows],
                    ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-    print(f"Applied evidence gate to {gated} of {len(rows)} questions")
+    print(f"Applied evidence gate to {gated} questions and empty-answer fallback to {empty_fallbacks}")
 
 
 if __name__ == "__main__":
