@@ -1,0 +1,16 @@
+.deps/
+.venv/
+__pycache__/
+*.pyc
+models/
+runtime/
+corpus.json
+NLP_官方评测教程/eval_tutorial/MultiHopRAG.json
+NLP_官方评测教程/eval_tutorial/qa_evaluate.py
+NLP_官方评测教程/eval_tutorial/qa_submission.json
+run_*/
+tmp/
+GroupXX_NLP_RAG/
+Group07_NLP_RAG/
+Group07_NLP_RAG.zip
+NLP_官方评测教程/eval_tutorial/学生自测教程.html

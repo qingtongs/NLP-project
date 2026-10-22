@@ -62,4 +62,3 @@ cd NLP_官方评测教程/eval_tutorial
 The official evaluator lowercases and whitespace-tokenizes answers. Its printed Precision, Recall, F1, and Accuracy are identical; the course uses overall Accuracy. This public benchmark is suitable for debugging and reported evaluation, and the result is not a hidden-test estimate.
 
 For separate retrieval analysis using public annotations, run `analyze_retrieval.py --corpus corpus.json --questions NLP_官方评测教程/eval_tutorial/MultiHopRAG.json --top-k 10`. This analysis is outside the generation pipeline. The report payload and template-filling scripts are included for repeatable report production; use the supplied template DOCX and the converted evaluator submission after the full run.
-
