@@ -55,7 +55,7 @@ def main() -> None:
     generator = info["models"][0]
     hours = usage["elapsed_seconds"] / 3600
     calls = sum(usage["model_calls_by_model"].values())
-    cases = {item["question_id"]: item for item in items}
+    cases = {f"q{index:04d}": item for index, item in enumerate(items)}
 
     def answer(question_id: str) -> str:
         return cases[question_id]["model_answer"]
