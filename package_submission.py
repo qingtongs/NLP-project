@@ -24,6 +24,7 @@ def main() -> None:
     parser.add_argument("--record", type=Path, required=True)
     parser.add_argument("--qa-submission", type=Path, required=True)
     parser.add_argument("--official-scores", type=Path, required=True)
+    parser.add_argument("--raw-official-scores", type=Path)
     parser.add_argument("--report-docx", type=Path, required=True)
     parser.add_argument("--report-pdf", type=Path, required=True)
     parser.add_argument("--report-payload", type=Path, required=True)
@@ -41,6 +42,8 @@ def main() -> None:
         "report/Group07_project_report.docx": args.report_docx,
         "report/Group07_project_report.pdf": args.report_pdf,
     }
+    if args.raw_official_scores:
+        mapping["evaluation/raw_official_scores.txt"] = args.raw_official_scores
     files = {}
     for relative, source in mapping.items():
         target = folder / relative

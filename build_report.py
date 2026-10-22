@@ -29,7 +29,7 @@ def after(paragraph: Paragraph, text: str) -> Paragraph:
     new.text = text
     new.alignment = (WD_ALIGN_PARAGRAPH.LEFT if text.startswith("References:")
                      else WD_ALIGN_PARAGRAPH.JUSTIFY)
-    new.paragraph_format.space_after = Pt(6)
+    new.paragraph_format.space_after = Pt(4)
     for run in new.runs:
         run.font.name = "Times New Roman"
         run.font.size = Pt(11)
@@ -40,7 +40,7 @@ def after(paragraph: Paragraph, text: str) -> Paragraph:
 def set_body(paragraph: Paragraph, text: str) -> None:
     paragraph.text = text
     paragraph.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
-    paragraph.paragraph_format.space_after = Pt(6)
+    paragraph.paragraph_format.space_after = Pt(4)
     for run in paragraph.runs:
         run.font.name = "Times New Roman"
         run.font.size = Pt(11)
@@ -136,6 +136,8 @@ def main() -> None:
         current = slot
         for paragraph_text in texts[1:]:
             current = after(current, paragraph_text)
+            if heading == "Analysis" and paragraph_text == texts[-1]:
+                current.paragraph_format.keep_together = True
         if heading == "Evaluation Result":
             scores = payload["scores"]
             score_table = doc.add_table(rows=1, cols=3)
