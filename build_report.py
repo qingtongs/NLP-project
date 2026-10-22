@@ -27,7 +27,8 @@ def after(paragraph: Paragraph, text: str) -> Paragraph:
     new = Paragraph(element, paragraph._parent)
     new.style = "Normal"
     new.text = text
-    new.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
+    new.alignment = (WD_ALIGN_PARAGRAPH.LEFT if text.startswith("References:")
+                     else WD_ALIGN_PARAGRAPH.JUSTIFY)
     new.paragraph_format.space_after = Pt(6)
     for run in new.runs:
         run.font.name = "Times New Roman"
