@@ -2,6 +2,8 @@
 
 This project answers all 2,556 questions using the complete 609-document MultiHop-RAG corpus. It uses BM25 passage retrieval with article titles and publishers indexed, clause-based searches, reciprocal-rank fusion, the top 10 passages, and a frozen Qwen3-8B generator. A deterministic evidence gate abstains if a question explicitly names a publisher absent from the corpus. The model has 8.2B total parameters. It never supplies the benchmark's `answer` or `evidence_list` fields to retrieval, generation, or the gate.
 
+The verified complete-run official Accuracy is **77.54% (1,982/2,556)**. Expanding publisher coverage and avoiding a false match on the phrase ��the Australian national team�� improved the previous 77.23% run by 0.31 percentage points. The 90% target has not been reached. The public benchmark was used for diagnostics, so this score is not a hidden-test estimate.
+
 ## Sources
 
 - Dataset: [MultiHopRAG](https://huggingface.co/datasets/yixuantt/MultiHopRAG/tree/71ac0d0bd1f951d2d6b70311f7d2ae404e1ffa82), revision `71ac0d0bd1f951d2d6b70311f7d2ae404e1ffa82`, ODC-BY.
@@ -11,7 +13,7 @@ This project answers all 2,556 questions using the complete 609-document MultiHo
 
 ## Setup on Windows
 
-Python 3.10+ and an NVIDIA GPU with current Vulkan support are recommended. Use a local Python virtual environment. The model download is about 5.0 GB; `setup_assets.py` verifies every file's SHA-256.
+Python 3.10+ and an NVIDIA GPU with current Vulkan support are recommended. Use a local Python virtual environment. The model download is about 5.0 GB; `setup_assets.py` downloads and verifies the dataset, model, and Windows runtime. It also downloads the pinned official evaluator. Install `tqdm` for the evaluator.
 
 ```powershell
 python -m venv .venv
@@ -19,7 +21,7 @@ python -m venv .venv
 .\.venv\Scripts\python.exe setup_assets.py
 ```
 
-The two course utility scripts `download_eval_files.py` and `prepare_eval.py` remain in `NLP_官方评测教程/eval_tutorial/` as supplied with the assignment.
+The two course utility scripts `download_eval_files.py` and `prepare_eval.py` remain in `NLP_�ٷ�����̳�/eval_tutorial/` as supplied with the assignment.
 
 ## Predict
 
@@ -29,10 +31,10 @@ Start the model server in one terminal:
 .\runtime\llama-b11804\llama-server.exe -m .\models\Qwen3-8B-Q4_K_M.gguf -ngl 99 -c 8192 -np 1 --flash-attn on --host 127.0.0.1 --port 8080
 ```
 
-Run the complete benchmark in another terminal:
+Run the complete benchmark in another terminal. The questions are downloaded by `setup_assets.py`.
 
 ```powershell
-.\.venv\Scripts\python.exe rag_project.py --corpus corpus.json --questions NLP_官方评测教程/eval_tutorial/MultiHopRAG.json --model-file models/Qwen3-8B-Q4_K_M.gguf --output-dir run_final --top-k 10 --prompt-mode comparison --no-think
+.\.venv\Scripts\python.exe rag_project.py --corpus corpus.json --questions NLP_�ٷ�����̳�/eval_tutorial/MultiHopRAG.json --model-file models/Qwen3-8B-Q4_K_M.gguf --output-dir run_final --top-k 10 --prompt-mode comparison --no-think
 ```
 
 The script creates raw `run_final/predictions.json`, `run_final/execution_record.json`, and an append-only JSONL checkpoint. If interrupted, rerun the same command to resume. Each question record stores retrieval queries, ranked passage text and source URLs, actual generator messages and context, output text, token counts, times, failures, and retries.
@@ -40,27 +42,18 @@ The script creates raw `run_final/predictions.json`, `run_final/execution_record
 Apply the evidence sufficiency gate to create the final submission artifacts:
 
 ```powershell
-.\.venv\Scripts\python.exe evidence_gate.py --corpus corpus.json --questions NLP_官方评测教程/eval_tutorial/MultiHopRAG.json --raw-record run_final/execution_record.json --output-dir run_final_gated
+.\.venv\Scripts\python.exe evidence_gate.py --corpus corpus.json --questions NLP_�ٷ�����̳�/eval_tutorial/MultiHopRAG.json --raw-record run_final/execution_record.json --output-dir run_final_gated
 ```
 
 The gate checks names of publishers in the question against the corpus's `source` values. If generation fails with an empty answer after retries, the postprocessor emits an explicit `Insufficient Information` fallback. It saves the raw generator answer, missing publisher names, fallback flag, and final answer under `answer_postprocessing` for every question. It does not inspect reference answers or question types.
 
-Validate the submission records before scoring:
-
-```powershell
-.\.venv\Scripts\python.exe validate_submission.py --predictions run_final_gated/predictions.json --record run_final_gated/execution_record.json
-```
-
 ## Score
 
 ```powershell
-cd NLP_官方评测教程/eval_tutorial
+cd NLP_�ٷ�����̳�/eval_tutorial
 ..\..\.venv\Scripts\python.exe prepare_eval.py --predictions ..\..\run_final_gated\predictions.json --queries MultiHopRAG.json --output qa_submission.json
 ..\..\.venv\Scripts\python.exe qa_evaluate.py --file qa_submission.json --queries MultiHopRAG.json
 ```
 
 The official evaluator lowercases and whitespace-tokenizes answers. Its printed Precision, Recall, F1, and Accuracy are identical; the course uses overall Accuracy. This public benchmark is suitable for debugging and reported evaluation, and the result is not a hidden-test estimate.
 
-For the postprocessing ablation, run the same two scoring commands with `run_final/predictions.json` as the `--predictions` input and a separate evaluator JSON output. Compare its official overall Accuracy with the final gated result. The final execution record also retains each raw generator answer under `answer_postprocessing.generator_answer`.
-
-For separate retrieval analysis using public annotations, run `analyze_retrieval.py --corpus corpus.json --questions NLP_官方评测教程/eval_tutorial/MultiHopRAG.json --top-k 10`. This analysis is outside the generation pipeline. The report payload and template-filling scripts are included for repeatable report production; use the supplied template DOCX and the converted evaluator submission after the full run.
