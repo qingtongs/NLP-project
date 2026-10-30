@@ -17,15 +17,12 @@ from pathlib import Path
 # publishers in the supplied corpus. Names present in the corpus never trigger
 # the gate. This list identifies names, not benchmark answer labels.
 PUBLISHER_NAMES = (
-    "Al Jazeera", "Architectural Digest", "Associated Press", "BBC", "Bloomberg",
-    "Business Insider", "Business Standard", "CNET", "CNN", "Deal Stripe",
-    "ESPN", "Financial Times", "Forbes", "Hindustan Times", "PCWorld",
-    "Punch Line", "Search Engine Land", "The Australian", "The Fashion Times",
+    "Al Jazeera", "Associated Press", "BBC", "Bloomberg", "Business Standard",
+    "CNET", "CNN", "ESPN", "Financial Times", "Forbes", "Hindustan Times",
     "Reuters", "Rolling Stone", "Space.com", "The Astrophysical Journal",
     "The Economic Times", "The Guardian", "The Hindu", "The Hollywood Reporter",
     "The New York Times", "The Verge",
     "Times of India", "Variety", "Wall Street Journal", "Washington Post",
-    "Yahoo Finance",
 )
 
 
@@ -33,8 +30,8 @@ def missing_publishers(question: str, publishers: set[str]) -> list[str]:
     normalized_publishers = {source.casefold() for source in publishers}
     missing = []
     for name in PUBLISHER_NAMES:
-        # These names can also occur as ordinary wording in a question.
-        flags = 0 if name in {"Variety", "The Australian"} else re.I
+        # "variety" is also an ordinary noun, so preserve case for that name.
+        flags = 0 if name == "Variety" else re.I
         if not re.search(r"(?<!\w)" + re.escape(name) + r"(?!\w)", question, flags):
             continue
         needle = name.casefold().removeprefix("the ")
